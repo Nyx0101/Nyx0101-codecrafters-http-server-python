@@ -18,7 +18,7 @@ def main():
     if path == "/":
         conn.send(b"HTTP/1.1 200 OK\r\n\r\n")
     else:
-        comm.sendall(response)
+        conn.sendall(response)
         print(f"Sent response: {response}")
      
 if __name__ == "__main__":
