@@ -10,33 +10,33 @@ def main():
         
         while True:
             try:      
-        # Wait for client a client connection
-        conn, addr = server_socket.accept()
-        print(f"Connection from {addr[0]} port {addr[1]}")
+                # Wait for client a client connection
+                conn, addr = server_socket.accept()
+                print(f"Connection from {addr[0]} port {addr[1]}")
         
-        # Receive data
-        data = comm.recv(1024).decode("utf-8")
-        print(f"Received data: {data}")
+                # Receive data
+                data = comm.recv(1024).decode("utf-8")
+                print(f"Received data: {data}")
         
-        # Extract the path from the HTTP request
-        path = data.split("")[1]
+                # Extract the path from the HTTP request
+                path = data.split("")[1]
         
-        # Determine response based on the path
-        if path == "/"
-            response = b"HTTP/1.1 200 OK\r\n\r\n"
-        else:
-            response = b"HTTP/1.1 404 Not Found\rn\r\n"
+                # Determine response based on the path
+                if path == "/"
+                    response = b"HTTP/1.1 200 OK\r\n\r\n"
+                else:
+                    response = b"HTTP/1.1 404 Not Found\rn\r\n"
             
-        # Send the response
-        comm.sendall(response)
-        print(f"Sent response: {response}")
+                # Send the response
+                comm.sendall(response)
+                print(f"Sent response: {response}")
              
-    except Exception as e:
-        print(f"An error occured while handling the connection: {e}")
-    finally:
-        # Ensure the client socket is closed
-        comm.close()
-        print("Client connection closed")
+        except Exception as e:
+            print(f"An error occured while handling the connection: {e}")
+        finally:
+            # Ensure the client socket is closed
+            comm.close()
+            print("Client connection closed")
         
      except Exception as e:
         print(f"An error occurred: {e}")
