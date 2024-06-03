@@ -19,10 +19,10 @@ def main():
                 print(f"Received data: {data}")
         
                 # Extract the path from the HTTP request
-                path = data.split("")[1]
+                path = data.split(" ")[1]
         
                 # Determine response based on the path
-                if path == "/"
+                if path == "/":
                     response = b"HTTP/1.1 200 OK\r\n\r\n"
                 else:
                     response = b"HTTP/1.1 404 Not Found\rn\r\n"
