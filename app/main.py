@@ -11,7 +11,7 @@ def main():
     
     
     
-    server_socket = socket.create_server(("localhost", 4221), resuse_port=True)
+    server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
     client_socket, _retaddr = server_socket.accept()
     request = client_socket.recv(1024).decode()
     url = re.search("GET (.*) HTTP", request).group(1)
