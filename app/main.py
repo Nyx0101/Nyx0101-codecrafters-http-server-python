@@ -1,29 +1,30 @@
 import socket
+import re
+
+
+OK_RESPONSE = "HTTP/1.1 200 OK\r\n\r\n".encode()
+NOTFOUND_RESPONSE = "HTTP/1.1 404 Not Found\r\n\r\n".encode()
 
 
 def main():
     print("Logs from your program will appear here!")
     
     
-    server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
-    conn, addr = server_socket.accept()
-    with conn:
-        val = conn.recv(1024)
-        pars = val.decode()
-        args = pars.split("\r\n")
-        response = b"HTTP/1.1 404 Not Found\r\n\r\n"
-        if len(args) > 1:
-            path = args[0].split(" ")
-            if path == "/":
-                response = b"HTTP/1.1 200 OK\r\n\r\n"
-            if "echo" in path[1]:
-                string = path[1].strip("/echo/")
-                response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(string)}\r\n\r\n{string}".encode()
-                print(f"First par {path}")
-                
-            print(f"Recieved: {val}")
-            conn.sendall(response)
     
-     
+    server_socket = socket.create_server(("localhost", 4221), resuse_port=True)
+    client_socket, _retaddr = server_socket.accept()
+    request = client_socket.recv(1024).decode()
+    url = re.search("GET (.*) HTTP", request).group(1)
+    
+    if url =="/":
+        client_socket.sendall(OK_RESPONSE)
+    elif url.startswith("/echo/"):
+        response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(url[6:])}".encode()
+        client_socket.sendall(response)
+    else:
+        client_socket.sendall(NOTFOUND_RESPONSE)
+        
+        
 if __name__ == "__main__":
     main()
+         
