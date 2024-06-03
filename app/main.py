@@ -3,7 +3,7 @@ import socket
 def main():
     try:
         # Create the server socket
-        server_socket = socket.create_server(("localhost", 4221), resue_port=True)
+        server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
         print("Server started on localhost:4221")
         
         # Wait for client a client connection
