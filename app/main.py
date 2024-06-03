@@ -10,7 +10,7 @@ def main():
     conn, addr = server_socket.accept()
     print(f"Connection from {addr[0]} port {addr[1]}")
         
-    data = comm.recv(1024).decode("utf-8")
+    data = conn.recv(1024).decode("utf-8")
     print(data)
         
     path = data.split(" ")[1]
