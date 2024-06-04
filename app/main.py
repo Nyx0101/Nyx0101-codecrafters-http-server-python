@@ -21,7 +21,7 @@ def handle_request(client_socket):
             
             if url == "/":
                 client_socket.sendall(OK_RESPONSE)
-            elif url. startswith("/echo/")
+            elif url. startswith("/echo/"):
                 echo_message = url[6:]
                 response = (
                     f"HTTP/1.1 200 OK\r\n"
