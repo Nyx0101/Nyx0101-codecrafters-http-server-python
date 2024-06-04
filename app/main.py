@@ -54,8 +54,7 @@ def main():
         print("Server is shutting down...")
     finally:
         server_socket.close()
-        
-        
+               
 if__name__=="__main__":
     main()
                     
