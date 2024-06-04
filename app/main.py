@@ -13,7 +13,7 @@ def main():
     req = data.split("\r\n")
     if len(req) > 0:
         path = req[0].split(" ")[1]
-        print(f"Parsed path: {path}")
+        print(f"Parsed path:{path}")
         
         if path =="/":
             response = "HTTP/1.1 200 OK\r\n\r\n".encode()
