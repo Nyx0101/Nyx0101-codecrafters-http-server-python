@@ -8,7 +8,8 @@ def handle_client(client_socket):
     print(url_path)
     if url_path == "/"  or url_path == "/index.html":
         response = "HTTP/1.1 200 OK\r\n\r\n"
-    elif: url_path.split("/")[1] == "echo":
+    elif: 
+        url_path.split("/")[1] == "echo":
         content = url_path.split("/")[2]
         content_length = len(content)
         response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {0}\r\n\r\n{1}".format(
