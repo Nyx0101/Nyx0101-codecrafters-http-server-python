@@ -3,7 +3,7 @@ import socket
 
 def main():
  
-    server_socket = socket.creat_server(("localhost", 4221), reuse_port=True)
+    server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
     client, addr  = server_socket.accept()
     data = client.recv(1024).decode()
     req = data.split("\r\n")
