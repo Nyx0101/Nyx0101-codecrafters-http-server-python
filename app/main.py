@@ -22,7 +22,7 @@ def main():
             response = (f"HTTP/1.1 200 OK\r\n"
                         f"Content-Type: text/plain\r\n"
                         f"Content-Length: {len(echo_message)}\r\n\r\n"
-                        f"{echo-message}").encode()
+                        f"{echo_message}").encode()
         elif path.startswith("/user-agent"):
             user_agent = ""
             for header in req:
