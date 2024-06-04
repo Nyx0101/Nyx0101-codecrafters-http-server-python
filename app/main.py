@@ -49,7 +49,7 @@ def main():
     client.close()
     print("Connection closed")
         
-if__name__ == "__main__":
+if __name__ == "__main__":
     main()
         
    
