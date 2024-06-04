@@ -5,26 +5,25 @@ import re
 OK_RESPONSE = "HTTP/1.1 200 OK\r\n\r\n".encode()
 NOTFOUND_RESPONSE = "HTTP/1.1 404 Not Found\r\n\r\n".encode()
 
-
-def main():
-    print("Logs from your program will appear here!")
-    
-    
-    
-    server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
-    client_socket, _retaddr = server_socket.accept()
-    request = client_socket.recv(1024).decode()
-    url = re.search("GET (.*) HTTP", request).group(1)
-    
-    if url =="/":
-        client_socket.sendall(OK_RESPONSE)
-    elif url.startswith("/echo/"):
-        response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(url[6:])}".encode()
-        client_socket.sendall(response)
-    else:
-        client_socket.sendall(NOTFOUND_RESPONSE)
+def handle_request(client_socket):
+    try:
+        request = client_socket.recv(1024).decode()
+        if not request:
+            return
+            
+        print(f"Received request: {request}")
         
         
-if __name__ == "__main__":
-    main()
+        match = re.search(r"GET (.*) HTTP", request)
+        if match:
+            url = match.group(1)
+            print(f"Parsed URL: {url}")
+            
+            if url == "/":
+                client_socket.sendall(OK_RESPONSE)
+            elif url. startswith("/echo/")
+                echo_message = url[6:]
+                response = (
+                    f"HTTP/1.1 200 OK\r\n"
+                    f"Content-Type: text/plain\r\n"
          
