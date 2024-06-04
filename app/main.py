@@ -26,4 +26,37 @@ def handle_request(client_socket):
                 response = (
                     f"HTTP/1.1 200 OK\r\n"
                     f"Content-Type: text/plain\r\n"
+                    f"Content-Length: {len(echo_message)}\r\n\r\n"
+                    f"{echo_message}"
+                ).encode()
+                client_socket.sendall(response)
+            else:
+                client_socket.sendall(NOTFOUND_RESPONSE)
+        else:
+            client_socket.sendall(NOTFOUND_RESPONSE)
+    except Exception as e:
+        print(f"Error handling request: {e}")
+    finally:
+        client_socket.close()
+        
+        
+def main():
+    print("Logs from your program will appear here!")
+    server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
+    print("Server started on localhost: 4221")
+    
+    
+    try:
+        while True:
+            client_socket, _retaddr = server_socket.accept()
+            handle_request(client_socket)
+    except KeyboardInterrupt:
+        print("Server is shutting down...")
+    finally:
+        server_socket.close()
+        
+        
+if__name__=="__main__":
+    main()
+                    
          
