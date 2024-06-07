@@ -61,7 +61,7 @@ def request_handler(sock: socket.socket) -> None:
         response_body = request.headers.get("User-Agent")
         
     response_contents = [
-        f"{request.https_version} {response_code}",
+        f"{request.http_version} {response_code}",
         *[f"{key}: {value}" for key, value in headers.items()],
         "",
         response_body,
