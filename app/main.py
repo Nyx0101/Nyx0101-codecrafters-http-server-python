@@ -66,7 +66,7 @@ def request_handler(sock: socket.socket) -> None:
         response_body,
     ]
     
-    sock.send('\r\n".join(response_contents).encode())
+    sock.send("\r\n".join(response_contents).encode())
     sock.close()
     
 if __name__ == "__main__":
