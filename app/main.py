@@ -19,7 +19,7 @@ class HTTPRequest:
         line_iter = iter(request_byters.split(b"\r\n"))
         line = next(line_iter)
         request.method, request.path, request.http_version = [
-            b.decode() for b in line.split(b" ") .
+            b.decode() for b in line.split(b" ")
         ]
 
         for line in liner_iter:
