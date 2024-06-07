@@ -56,7 +56,7 @@ def request_handler(sock: socket.socket) -> None:
         response_code = "200 OK"
         response_body = request.headers.get("User-Agent")
         
-        headers["Content-Type] = "text/plain"
+        headers["Content-Type"] = "text/plain"
         headers["Content-Length"] = len(response_body)
         
     response_contents = [
