@@ -22,7 +22,7 @@ class HTTPRequest:
             b.decode() for b in line.split(b" ")
         ]
 
-        for line in liner_iter:
+        for line in line_iter:
             if len(line.strip()) == 0:
                 continue
             
