@@ -13,10 +13,10 @@ class HTTPRequest:
         self.headers = {}
         
     @staticmethod
-    def from_bytes(request_bytes: byters) -> "HTTPRequest":
+    def from_bytes(request_bytes: bytes) -> "HTTPRequest":
         request = HTTPRequest()
         
-        line_iter = iter(request_byters.split(b"\r\n"))
+        line_iter = iter(request_bytes.split(b"\r\n"))
         line = next(line_iter)
         request.method, request.path, request.http_version = [
             b.decode() for b in line.split(b" ")
