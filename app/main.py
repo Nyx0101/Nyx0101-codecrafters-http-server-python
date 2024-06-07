@@ -1,55 +1,78 @@
 import socket
+import threading
+from typing import Dict
 
 
-def main():
-
- 
-    server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
-    client, addr  = server_socket.accept()
+class HTTPRequest:
+    method: str
+    path: str
+    http_version: str
+    headers: Dict[str, str]
     
-    data = client.recv(1024).decode()
-    print(f"Received data: {data}")
-    
-    req = data.split("\r\n")
-    if len(req) > 0:
-        path = req[0].split(" ")[1]
-        print(f"Parsed path:{path}")
+    def __init__(self) -> None:
+        self.headers = {}
         
-        if path =="/":
-            response = "HTTP/1.1 200 OK\r\n\r\n".encode()
-        elif path.startswith("/echo"):
-            echo_message = path[6:]
-            response = (f"HTTP/1.1 200 OK\r\n"
-                        f"Content-Type: text/plain\r\n"
-                        f"Content-Length: {len(echo_message)}\r\n\r\n"
-                        f"{echo_message}").encode()
-        elif path.startswith("/user-agent"):
-            user_agent = ""
-            for header in req:
-                if header.startswith("User-Agent"):
-                    user_agent = header.split(": ")[1]
-                    break
-            if user_agent:
-                response = (f"HTTP/1.1 200 OK\r\n"
-                            f"Content-Type: text/plain\r\n"
-                            f"Content-Length: {len(user_agent)}\r\n\r\n"
-                            f"{user_agent}").encode()
-            else:
-                response = "HTTP/1.1 404 Not Found\r\n\r\n".encode()
-        else:
-            response = "HTTP/1.1 404 Not Found\r\n\r\n".encode()
-                
-        print(f"Sending response: {response.decode()}")
-        client.send(response)
-    else:
-        print("No request data received.")
-        response = "HTTP/1.1 400 Bad Request\r\n\r\n".encode()
-        client.send(response)
+    @staticmethod
+    def from_byters(request_bytes: byters) -> "HTTPRequest":
+        request = HTTPRequest()
+        
+        line_iter = iter(request_byters.split(b"\r\n"))
+        line = next(line_iter)
+        request.method, request.path, request.http_version = [
+            b.decode() for b in line.split(b" ") .
+        ]
+
+        for line in liner_iter:
+            if len(line.strip()) == 0:
+                continue
             
-    client.close()
-    print("Connection closed")
+            key, value = line.split(b":", maxsplit=1)
+            request.headers[key.decode()] = value.decode().strip
+            
+        return request
         
+def main() -> None:
+    server_socket = socket.creater_server(("localhost", 4221), reuse_port=True)
+    while True:
+        sock, response_addr = server.socket.accept()
+        request_handler(sock) # May need to remove redline
+        t = threading.Thread(target=lambda: request_handler(sock))
+        t.start()
+        
+def request_handler(sock: socket.socket) -> None:
+    request_bytes = sock.recv(1024)
+    request = HTTPRequest.from_bytes(request_bytes)
+    
+    headers = {}
+    response_body = ""
+    
+    response_code = "404 Not Found"
+    if request.path == "/":
+        response_code = "200 OK"
+    elif request.path.startswith("/echo/"):
+        response_code = "200 OK"
+        response_body = request.path[len(response_body)
+    elif request.path.startswith("/user-agent"):
+        response_code = "200 OK"
+        response_body = request.headers.get("User-Agent")
+        
+        headers["Content-Type] = "text/plain"
+        headers["Content-Length"] = len(response_body)
+        
+    response_contents = [
+        f"{request.https_version} {response_code}",
+        *[f"{key}: {value}" for key, value in headers.items()],
+        "",
+        response_body,
+    ]
+    
+    sock.send('\r\n".join(response_contents).encode())
+    sock.close()
+    
 if __name__ == "__main__":
     main()
+                
+                
+           
         
    
