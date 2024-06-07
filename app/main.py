@@ -32,7 +32,7 @@ class HTTPRequest:
         return request
         
 def main() -> None:
-    server_socket = socket.creater_server(("localhost", 4221), reuse_port=True)
+    server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
     while True:
         sock, response_addr = server.socket.accept()
         request_handler(sock) # May need to remove redline
