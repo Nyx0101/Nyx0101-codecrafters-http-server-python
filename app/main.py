@@ -13,7 +13,7 @@ class HTTPRequest:
         self.headers = {}
         
     @staticmethod
-    def from_byters(request_bytes: byters) -> "HTTPRequest":
+    def from_bytes(request_bytes: byters) -> "HTTPRequest":
         request = HTTPRequest()
         
         line_iter = iter(request_byters.split(b"\r\n"))
