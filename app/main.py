@@ -35,6 +35,7 @@ def main() -> None:
     server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
     while True:
         sock, response_addr = server_socket.accept()
+        request_handler(sock)
         t = threading.Thread(target=lambda: request_handler(sock))
         t.start()
         
@@ -58,6 +59,9 @@ def request_handler(sock: socket.socket) -> None:
     elif request.path.startswith("/user-agent"):
         response_code = "200 OK"
         response_body = request.headers.get("User-Agent")
+        
+    headers["Content-Type"] = "text/plain"
+    headers["Content-Length"] = len(response_body)
         
     response_contents = [
         f"{request.http_version} {response_code}",
