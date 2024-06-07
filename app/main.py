@@ -51,13 +51,14 @@ def request_handler(sock: socket.socket) -> None:
         response_code = "200 OK"
     elif request.path.startswith("/echo/"):
         response_code = "200 OK"
-        response_body = request.path[len(response_body)
-    elif request.path.startswith("/user-agent"):
-        response_code = "200 OK"
-        response_body = request.headers.get("User-Agent")
+        response_body = request.path[len("/echo/") :]
+        
         
         headers["Content-Type"] = "text/plain"
         headers["Content-Length"] = len(response_body)
+    elif request.path.startswith("/user-agent"):
+        response_code = "200 OK"
+        response_body = request.headers.get("User-Agent")
         
     response_contents = [
         f"{request.https_version} {response_code}",
