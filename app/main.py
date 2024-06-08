@@ -41,7 +41,12 @@ def main() -> None:
         t.start()
         
 def request_handler(sock: socket.socket) -> None:
-    request_bytes = sock.recv(1024)
+    request_bytes = bytearray()
+    while True:
+        chunk = sock.recv(1024)
+        if not chunk:
+            break
+        request_bytes.extend(chunk)
     
     request = HTTPRequest.from_bytes(request_bytes) 
     
