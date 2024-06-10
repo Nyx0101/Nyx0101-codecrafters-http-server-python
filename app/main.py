@@ -11,7 +11,8 @@ def handle_client(client_socket):
          
     response = "HTTP/1.1 200 OK\r\n"
     response += "Content-Type: text/plain\r\n\r\n"
-    response += "Content-Length: 13\r\n\r\n"
+    response_length = len(response.encode("utf-8"))
+    response += "Content-Length: {}\r\n\r\n".format(response_length)
     response += "Hello, World!\r\n"
     client_socket.sendall(response.encode("utf-8"))
      
