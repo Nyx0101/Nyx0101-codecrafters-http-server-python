@@ -6,7 +6,7 @@ def handle_client(client_socket):
     if not request:
          return
          
-    request = request.decode("utf-8"))
+    request = request.decode("utf-8")
     print(f"Received request: {request}")
      
     response = "HTTP/1.1 200 OK\r\n\r\nnHello, World!"
