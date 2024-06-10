@@ -8,8 +8,8 @@ def handle_client(client_socket):
          
     request = request.decode("utf-8")
     print(f"Received request: {request}")
-     
-    response = "HTTP/1.1 200 OK\r\n\r\nnHello, World!"
+         
+    headers = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n"
     client_socket.sendall(response.encode("utf-8"))
      
     client_socket.close()
@@ -17,7 +17,6 @@ def handle_client(client_socket):
 def main():
     server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
     
-  
     while True:
         conn, address = server_socket.accept()
         print(f"Connected by {address}")
