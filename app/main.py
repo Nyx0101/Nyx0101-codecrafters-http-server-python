@@ -13,7 +13,7 @@ def handle_request(conn):
         if path =="/":
             conn.sendall(b"HTTP/1.1 200 OK\r\n\r\n")
         elif path.startswith("/echo") or path.startswith("/user-agent"):
-        if path.startswith("/echo"):
+            if path.startswith("/echo"):
             body = path.split("/")[-1]
         else:
             body = parsed_request[parsed_request.index("User-Agent:") + 1]
