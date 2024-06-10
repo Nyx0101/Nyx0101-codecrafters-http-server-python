@@ -10,7 +10,7 @@ def handle_client(client_socket):
     print(f"Received request: {request}")
          
     response = "HTTP/1.1 200 OK\r\n"
-    response += "Content-Type: text/plain\r\n\"
+    response += "Content-Type: text/plain\r\n\r\n"
     response += "Content-Length: 13\r\n\r\n"
     response += "Hello, World!\r\n"
     client_socket.sendall(response.encode("utf-8"))
