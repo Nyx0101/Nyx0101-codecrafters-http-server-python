@@ -10,7 +10,7 @@ def handle_client(client_socket):
         if not request:
             return        
         request = request.decode("utf-8")
-        logging.info(f"Received request: {rquest}")      
+        logging.info(f"Received request: {request}")      
         response = "HTTP/1.1 200 OK\r\n"
         response += "Content-Type: text/plain\r\n\r\n"
         response_length = len(response.encode("utf-8"))
