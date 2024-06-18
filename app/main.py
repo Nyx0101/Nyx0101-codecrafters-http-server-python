@@ -11,7 +11,7 @@ def main():
         if path == "/":
             response = "HTTP/1.1 200 OK\r\n\r\n".encode()
         elif path.startswith("/echo"):
-            response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(path[6:])}\r\n\r\n{path[6:]}".encode()
+            response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(path[9:])}\r\n\r\n{path[9:]}".encode()
         elif path.startswith("/user-agent"):
             user_agent = req[2].split(": ")[1]
             response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(user_agent)}\r\n\r\n{user_agent}".encode()
