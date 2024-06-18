@@ -2,16 +2,17 @@ import socket
 import threading
 import sys
 
-
 def main():
     def handle_req(client, addr):
         data = client.recv(1024).decode()
         req = data.split("\r\n")
         path = req[0].split(" ")[1]
+        
         if path == "/":
             response = "HTTP/1.1 200 OK\r\n\r\n".encode()
         elif path.startswith("/echo"):
-            response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(path[9:])}\r\n\r\n{path[9:]}".encode()
+            user_agent = req[2].split(": ")[1]
+            response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(user_agent)}\r\n\r\n{user_agent}".encode()
         elif path.startswith("/user-agent"):
             user_agent = req[2].split(": ")[1]
             response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(user_agent)}\r\n\r\n{user_agent}".encode()
@@ -20,24 +21,27 @@ def main():
             filename = path[7:]
             print(directory, filename)
             try:
-                with open(f"/{directory}/{filename}", "r") as f:
+                with open(f"{directory}/{filename}", "r") as f:
                     body = f.read()
-                response = f"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {len(body)}\r\n\r\n{body}".encode()        
+                response = f"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {len(body)}\r\n\r\n{body}".encode()
             except Exception as e:
                 response = f"HTTP/1.1 404 Not Found\r\n\r\n".encode()
         else:
-            response = "HTTP?1.1 404 Not Found\r\n\r\n".encode()
-        client.send(response)
+            response = "HTTP/1.1 404 Not Found\r\n\r\n".encode()
         
-    server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
+        client.send(response)
+    
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind(("localhost", 4221))
+    server_socket.listen(5)
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    
     while True:
         client, addr = server_socket.accept()
         threading.Thread(target=handle_req, args=(client, addr)).start()
-        
-        
-        
+
 if __name__ == "__main__":
-    main()  
+    main()
 
     
     
