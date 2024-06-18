@@ -1,48 +1,40 @@
 import socket
 import threading
-import sys
 
-def main():
-    def handle_req(client, addr):
-        data = client.recv(1024).decode()
-        req = data.split("\r\n")
-        path = req[0].split(" ")[1]
-        
-        if path == "/":
-            response = "HTTP/1.1 200 OK\r\n\r\n".encode()
-        elif path.startswith("/echo"):
-            user_agent = req[2].split(": ")[1]
-            response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(user_agent)}\r\n\r\n{user_agent}".encode()
-        elif path.startswith("/user-agent"):
-            user_agent = req[2].split(": ")[1]
-            response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(user_agent)}\r\n\r\n{user_agent}".encode()
-        elif path.startswith("/files"):
-            directory = sys.argv[2]
-            filename = path[7:]
-            print(directory, filename)
-            try:
-                with open(f"{directory}/{filename}", "r") as f:
-                    body = f.read()
-                response = f"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {len(body)}\r\n\r\n{body}".encode()
-            except Exception as e:
-                response = f"HTTP/1.1 404 Not Found\r\n\r\n".encode()
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+server_socket.bind(("localhost", 4221))
+server_socket.listen(5)
+
+print("Server started. Waiting for connections...")
+
+def handle_req(req):
+    try:
+        headers = req[0].decode().split("\r\n")
+        user_agent = [header.split(": ")[1] for header in headers if "User-Agent" in header]
+        if user_agent:
+            user_agent = user_agent[0]
         else:
-            response = "HTTP/1.1 404 Not Found\r\n\r\n".encode()
+            user_agent = "Unknown"
         
-        client.send(response)
-    
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-    server_socket.bind(("localhost", 4221))
-    server_socket.listen(5)
-    
-    while True:
-        client, addr = server_socket.accept()
-        threading.Thread(target=handle_req, args=(client, addr)).start()
+        # Do something with the user_agent
+        print(user_agent)
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
-if __name__ == "__main__":
-    main()
+def handle_client(client_socket):
+    while True:
+        req = client_socket.recv(1024)
+        if not req:
+            break
+        handle_req(req)
+        client_socket.sendall(b"HTTP/1.1 200 OK\r\n\r\n")
+
+while True:
+    client_socket, addr = server_socket.accept()
+    print(f"Connected by {addr}")
+    client_thread = threading.Thread(target=handle_client, args=(client_socket,))
+    client_thread.start()
 
     
     
