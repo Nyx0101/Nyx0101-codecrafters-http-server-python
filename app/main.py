@@ -74,7 +74,7 @@ async def handle_connection(reader: StreamReader, writer: StreamWriter) -> None:
         )
     elif method.upper() == "POST":
         p.write_bytes(body.encode())
-        writer.writer(make_response(201))
+        writer.write(make_response(201))
     else:
         writer.write(make_response(404))
     stderr(f"[OUT] file {path}")
