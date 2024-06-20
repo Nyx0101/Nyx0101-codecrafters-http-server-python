@@ -70,7 +70,7 @@ async def handle_connection(reader: StreamReader, writer: StreamWriter) -> None:
             writer.write(
                 make_response(
                 200,
-                {"Content-Type": "application/octet-stream:},
+                {"Content-Type": "application/octet-stream"},
                 p.read_text(),
             )
         )
