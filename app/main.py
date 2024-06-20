@@ -17,8 +17,8 @@ def parse_request(content: bytes) -> tuple[str, str, dict[str, str], str]:
     method, path, _ = first_line.split(b" ")
     headers: dict[str, str] = {}
     while (line := tail.pop(0)) != b"":
-    key, value = line.split(b": ")
-    headers[key.decode()] = value.decode()
+        key, value = line.split(b": ")
+        headers[key.decode()] = value.decode()
 return method.decode(), path.decode(), headers, b"".join(tail).decode()
 
 
