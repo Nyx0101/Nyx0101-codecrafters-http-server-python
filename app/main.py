@@ -77,10 +77,10 @@ async def handle_connection(reader: StreamReader, writer: StreamWriter) -> None:
         writer.write(make_response(201))
     else:
         writer.write(make_response(404))
-    stderr(f"[OUT] file {path}")
-else:
-    writer.write(make_response( 404, {}, ""))
-    stderr(f"[OUT] 404")
+        stderr(f"[OUT] file {path}")
+    else:
+        writer.write(make_response( 404, {}, ""))
+        stderr(f"[OUT] 404")
     
 writer.close()
 
