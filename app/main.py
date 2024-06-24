@@ -19,7 +19,7 @@ def parse_request(content: bytes) -> tuple[str, str, dict[str, str], str]:
     while (line := tail.pop(0)) != b"":
         key, value = line.split(b": ")
         headers[key.decode()] = value.decode()
-return method.decode(), path.decode(), headers, b"".join(tail).decode()
+    return method.decode(), path.decode(), headers, b"".join(tail).decode()
 
 
 def make_response(
@@ -77,7 +77,7 @@ async def handle_connection(reader: StreamReader, writer: StreamWriter) -> None:
         writer.write(make_response(201))
     else:
         writer.write(make_response(404))
-        stderr(f"[OUT] file {path}")
+    stderr(f"[OUT] file {path}")
 else:
     writer.write(make_response( 404, {}, ""))
     stderr(f"[OUT] 404")
