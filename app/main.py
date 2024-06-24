@@ -50,7 +50,6 @@ def make_response(
 
 
 async def handle_connection(reader: StreamReader, writer: StreamWriter) -> None:
-    _, path, headers, _ = parse_request(await reader.read(2**16))
     method, path, headers, body = parse_request(await reader.read(2**16))
 
     if re.fullmatch(r"/", path):
