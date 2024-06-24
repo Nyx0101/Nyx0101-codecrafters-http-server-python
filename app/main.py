@@ -73,7 +73,7 @@ async def main():
     
     app = web.Application()
     app.add_routes([web.post("/{path:.+}", handle)]
-                  + [web.get("/{path:.+}", handle])
+                  + [web.get("/{path:.+}", handle)]
     
     runner = web.AppRunner(app)
     site = web.TCPSite(runner, "localhost", 4221)
