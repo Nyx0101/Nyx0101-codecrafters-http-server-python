@@ -72,8 +72,7 @@ async def main():
     GLOBALS["DIR"] = args.directory
     
     app = web.Application()
-    app.add_routes([web.post("/{path:.+}", handle)]
-                  + [web.get("/{path:.+}", handle)]
+    app.add_routes([web.post(r"/{path:.+}", handle), web.get(r"/{path:.+}", handle)])
     
     runner = web.AppRunner(app)
     site = web.TCPSite(runner, "localhost", 4221)
