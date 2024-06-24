@@ -31,7 +31,7 @@ def make_response(
     headers = headers or {}
     msg = {
         200: "OK",
-        201: "CREATED",
+        201: "Created",
         404: "NOT FOUND",
     }
 
