@@ -2,7 +2,7 @@ import asyncio
 import argparse
 import re
 import sys
-from asyncico.streams import StreamReader, StreamWriter
+from asyncio.streams import StreamReader, StreamWriter
 from pathlib import Path
 
 GLOBALS = {}
