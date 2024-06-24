@@ -66,7 +66,6 @@ async def handle_connection(reader: StreamReader, writer: StreamWriter) -> None:
         stderr(f"[OUT] echo {msg}")
     elif match := re.fullmatch(r"/files/(.+)", path):
         p = Path(GLOBALS["DIR"]) / match.group(1)
-        if p.is_file():
         if method.upper() == "GET" and p.is_file():
             writer.write(
                 make_response(
