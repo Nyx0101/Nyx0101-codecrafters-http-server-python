@@ -97,7 +97,7 @@ async def main():
     server = await asyncio.start_server(handle_connection, "localhost", 4221)
     async with server:
         stderr("Starting server...")
-        stder(f" --directory {GLOBALS['DIR"]}")
+        stderr(f" --directory {GLOBALS['DIR"]}")
         await server.serve_forever()
         
         
