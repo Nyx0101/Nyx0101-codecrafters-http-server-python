@@ -2,7 +2,7 @@ import asyncio
 import argparse
 import re
 import sys
-from asyncio.streams import StreamReader, StreamWriter
+from aiohttp import web
 from pathlib import Path
 
 GLOBALS = {}
@@ -43,32 +43,26 @@ def make_response(
         ),
     )
 
-async def handle_connection(reader: StreamReader, writer: StreamWriter) -> None:
-    method, path, headers, body = parse_request(await reader.read(2**16))
+async def handle(request):
+    method, path, headers, body = parse_request(await request.read())
     
     if re.fullmatch(r"/", path):
-        writer.write(make_response(200).encode())
-        stderr(f"[OUT] /")
+        return web.Response(text="", status=200)
     elif re.fullmatch(r"/user-agent", path):
         ua =  headers.get("User-Agent", "")
-        writer.write(make_response(200, {"Content-Type": "text/plain"}, ua).encode())
-        stderr(f"[OUT] user-agent {ua}")
+        return web.Response(text=ua, content_type="text/plain", status=200)
     elif match := re.fullmatch(r"/echo/(.+)", path):
         msg = match.group(1)
-        writer.write(make_response(200, {"Content-Type": "text/plain"}, msg).encode())
-        stderr(f"[OUT] echo {msg}")
+        return web.Response(text=msg, content_type="text/plain", status=200)
     elif match := re.fullmatch(r"/files/(.+)", path):
         p = Path(GLOBALS["DIR"]) / match.group(1)
         if method.upper() == "GET" and p.is_file():
-            writer.write(make_response(200, {"Content-Type": "application/octet-stream"}, p.read_text()).encode())
+            return web.Response(body=p.read_text(), content_type="application/octet-stream", status=200)
         elif method.upper() == "POST":
             p.write_bytes(body.encode())
-            writer.write(make_response(201).encode())
+            return web.Response(status=201)
     else:
-        writer.write(make_response(404).encode())
-        stderr(f"[OUT] file {path}")
-
-writer.close()
+        return web.Response(text="", status=404)
 
 async def main():
     parser = argparse.ArgumentParser()
@@ -77,17 +71,20 @@ async def main():
     
     GLOBALS["DIR"] = args.directory
     
-    server = await asyncio.start_server(handle_connection, "localhost", 4221)
-    async with server:
-        stderr("Starting server...")
-        stderr(f" --directory {GLOBALS['DIR']}")
-        await server.serve_forever()
-
+    app = web.Application()
+    app.add_routes([web.post("/{path:.+}", handle)]
+                  + [web.get("/{path:.+}", handle])
+    
+    runner = web.AppRunner(app)
+    site = web.TCPSite(runner, "localhost", 4221)
+    
+    await site.start()
+    
 if __name__ == "__main__":
     asyncio.run(main())
 
 
-P
+
     
            
 
