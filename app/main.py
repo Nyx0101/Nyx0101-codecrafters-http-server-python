@@ -32,7 +32,7 @@ def make_response(
     msg = {
         200: "OK",
         201: "Created",
-        404: "NOT FOUND",
+        404: "Not Found",
     }
 
     return b"\r\n".join(
