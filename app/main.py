@@ -1,6 +1,3 @@
-Here is the rewritten code:
-
-```python
 import asyncio
 import argparse
 import re
