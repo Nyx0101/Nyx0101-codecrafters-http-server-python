@@ -34,7 +34,7 @@ def process_conn(conn):
                 body = data.encode()
                 extra_headers = []
                 if "Accept-Encoding" in headers:
-                encoding = headers.get("Accept-Encoding")
+                    encoding = headers.get("Accept-Encoding")
                 if encoding in ["gzip"]:
                     extra_headers.append(
                         b"Content-Encoding: %b\r\n"
