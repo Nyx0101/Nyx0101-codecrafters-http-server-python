@@ -1,6 +1,6 @@
 import socket
 import sys
-from concurrent.futures import ThreadPoolExecutor, process
+from concurrent.futures import ThreadPoolExecutor
 from typing import List
 from pathlib import Path
 
@@ -97,28 +97,31 @@ def process_conn(conn):
                     b"".join(
                         [
                             b"HTTP/1.1 201 Created",
-                            b"\r\n",   # Corrected line
-                            b"\r\n",   # Corrected line
+                            b"\r\n",
+                            b"\r\n",
                         ]
                     )
                 )
             case _:
                 conn.send(b"HTTP/1.1 404 Not Found\r\n\r\n")
 
-# Add the necessary code to initialize and start the server
+
 def main():
-    host = 'localhost'
-    port = 8080
+    host = '0.0.0.0'  # Accept connections on all network interfaces
+    port = 4221       # Ensure this matches the expected port
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((host, port))
         s.listen()
+        print(f"Server listening on {host}:{port}")
         with ThreadPoolExecutor() as executor:
             while True:
                 conn, addr = s.accept()
                 executor.submit(process_conn, conn)
 
+
 if __name__ == "__main__":
     main()
+
 
     
                      
