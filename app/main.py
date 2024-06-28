@@ -1,7 +1,6 @@
 import socket
 import sys
-import signal
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, process
 from typing import List
 from pathlib import Path
 
@@ -9,7 +8,6 @@ from pathlib import Path
 def process_conn(conn):
     with conn:
         init = conn.recv(4096)
-
         def parse_http(bs: bytes):
             lines: List[bytes] = []
             while not bs.startswith(b"\r\n"):
@@ -35,9 +33,12 @@ def process_conn(conn):
             case ("GET", _, ["", "echo", data]):
                 body = data.encode()
                 extra_headers = []
+                if "Accept-Encoding" in headers:
                 encoding = headers.get("Accept-Encoding")
                 if encoding in ["gzip"]:
                     extra_headers.append(
+                        b"Content-Encoding: %b\r\n"
+                        % headers["Accept-Encoding"].encode()
                         b"Content-Encoding: %b\r\n" % encoding.encode()
                     )
                 conn.send(
@@ -61,6 +62,7 @@ def process_conn(conn):
                             b"HTTP/1.1 200 OK",
                             b"\r\n",
                             b"Content-Type: text/plain\r\n",
+                            b"Content-Length: %d\r\n" % len(body),
                             b"\r\n",
                             body,
                         ]
@@ -107,28 +109,20 @@ def process_conn(conn):
                 conn.send(b"HTTP/1.1 404 Not Found\r\n\r\n")
 
 
-def handle_signal(signal, frame):
-    print("Shutting down server...")
-    sys.exit(0)
+def process_conn_with_exception(conn):
+    try:
+        process_conn(conn)
+    except Exception as ex:
+        print(ex)
 
 
 def main():
-    host = '0.0.0.0'
-    port = 4221
-    signal.signal(signal.SIGINT, handle_signal)
-    signal.signal(signal.SIGTERM, handle_signal)
-    
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-        s.bind((host, port))
-        s.listen()
-        print(f"Server listening on {host}:{port}")
-        with ThreadPoolExecutor() as executor:
+    with socket.create_server(("localhost", 4221), reuse_port=True) as server_socket:
+        with ThreadPoolExecutor(max_workers=100) as executor:
             while True:
-                conn, addr = s.accept()
-                executor.submit(process_conn, conn)
-
+                (conn, _) = server_socket.accept()
+                executor.submit(process_conn_with_exception, conn)
+                
 
 if __name__ == "__main__":
     main()
