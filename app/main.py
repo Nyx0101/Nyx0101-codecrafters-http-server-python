@@ -82,28 +82,29 @@ def process_conn(conn):
                     )
                 )
             else:
-                conn.send(b"HTTP/1.1 404 Not Found\r\n\r\n")
-        case ("POST", _, ["", "files", f]):
-            target = Path(sys.argv[2]) / f
-            size = int(headers["Content-Length"])
-            remaining = size - len(body_start)
-            if remaining > 0:
-                body_rest = conn.recv(remaining, socket.MSG_WAITALL)
-            else: 
-                body_rest = b""
-            body = body_start + body_rest
-            target.write_bytes(body)
-            conn.send(
-                b"".join(
-                    [
-                        b"HTTP/1.1 201 Created",
-                        b"\r\n\",
-                        b"\r\n\",
-                    ]
-                )
-            )
-        case _:
-            conn.send(b"HTTP/1.1 404 Not Found\r\n\r\n")
+    conn.send(b"HTTP/1.1 404 Not Found\r\n\r\n")
+case ("POST", _, ["", "files", f]):
+    target = Path(sys.argv[2]) / f
+    size = int(headers["Content-Length"])
+    remaining = size - len(body_start)
+    if remaining > 0:
+        body_rest = conn.recv(remaining, socket.MSG_WAITALL)
+    else:
+        body_rest = b""
+    body = body_start + body_rest
+    target.write_bytes(body)
+    conn.send(
+        b"".join(
+            [
+                b"HTTP/1.1 201 Created",
+                b"\r\n",   # Corrected line
+                b"\r\n",   # Corrected line
+            ]
+        )
+    )
+case _:
+    conn.send(b"HTTP/1.1 404 Not Found\r\n\r\n")
+
         
         
         
