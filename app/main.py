@@ -1,5 +1,6 @@
 import socket
 import sys
+import signal
 from concurrent.futures import ThreadPoolExecutor
 from typing import List
 from pathlib import Path
@@ -106,10 +107,20 @@ def process_conn(conn):
                 conn.send(b"HTTP/1.1 404 Not Found\r\n\r\n")
 
 
+def handle_signal(signal, frame):
+    print("Shutting down server...")
+    sys.exit(0)
+
+
 def main():
-    host = '0.0.0.0'  # Accept connections on all network interfaces
-    port = 4221       # Ensure this matches the expected port
+    host = '0.0.0.0'
+    port = 4221
+    signal.signal(signal.SIGINT, handle_signal)
+    signal.signal(signal.SIGTERM, handle_signal)
+    
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         s.bind((host, port))
         s.listen()
         print(f"Server listening on {host}:{port}")
@@ -121,6 +132,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
     
