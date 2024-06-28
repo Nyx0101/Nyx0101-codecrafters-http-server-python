@@ -1,107 +1,131 @@
-import asyncio
-import argparse
-import re
+import socket
 import sys
-from asyncio.streams import StreamReader, StreamWriter
+from concurrent.futures import ThreadPoolExecutor, process
+from typing import List
 from pathlib import Path
 
 
-GLOBALS = {}
-
-
-def stderr(*args, **kwargs):
-    print(*args, **kwargs, file=sys.stderr)
-
-
-def parse_request(content: bytes) -> tuple[str, str, dict[str, str], str]:
-    first_line, *tail = content.split(b"\r\n")
-    method, path, _ = first_line.split(b" ")
-    headers: dict[str, str] = {}
-    while (line := tail.pop(0)) != b"":
-        key, value = line.split(b": ")
-        headers[key.decode()] = value.decode()
-    return method.decode(), path.decode(), headers, b"".join(tail).decode()
-
-
-def make_response(
-    status: int,
-    headers: dict[str, str] | None = None,
-    body: str = "",
-) -> bytes:
-    headers = headers or {}
-    msg = {
-        200: "OK",
-        201: "Created",
-        404: "Not Found",
-    }
-
-    return b"\r\n".join(
-        map(
-            lambda i: i.encode(),
-            [
-                f"HTTP/1.1 {status} {msg[status]}",
-                *[f"{k}: {v}" for k, v in headers.items()],
-                f"Content-Length: {len(body)}",
-                "",
-                body,
-            ],
-        ),
-    )
-
-
-async def handle_connection(reader: StreamReader, writer: StreamWriter) -> None:
-    method, path, headers, body = parse_request(await reader.read(2**16))
-
-    if re.fullmatch(r"/", path):
-        writer.write(b"HTTP/1.1 200 OK\r\n\r\n")
-        stderr(f"[OUT] /")
-    elif re.fullmatch(r"/user-agent", path):
-        ua = headers["User-Agent"]
-        writer.write(make_response(200, {"Content-Type": "text/plain"}, ua))
-        stderr(f"[OUT] user-agent {ua}")
-    elif match := re.fullmatch(r"/echo/(.+)", path):
-        msg = match.group(1)
-        writer.write(make_response(200, {"Content-Type": "text/plain"}, msg))
-        stderr(f"[OUT] echo {msg}")
-    elif match := re.fullmatch(r"/files/(.+)", path):
-        p = Path(GLOBALS["DIR"]) / match.group(1)
-        if method.upper() == "GET" and p.is_file():
-            writer.write(
-                make_response(
-                    200,
-                    {"Content-Type": "application/octet-stream"},
-                    p.read_text(),
+def process_conn(conn):
+    with conn:
+        init = conn.recv(4096)
+        
+        def parse_http(bs: bytes):
+            lines: List[bytes] = []
+            while not bs.startswith(b"\r\n"):
+                sp = bs.split(b"\r\n", 1)
+                if len(sp) == 2:
+                    line, bs = sp
+                    lines.append(line)
+                else:
+                    cont = conn.recv(4096)
+                    bs += cont
+            return lines, bs[2:]
+            
+        (start_line, *raw_headers), body_start = parse_http(init)
+        headers = {
+            parts[0]: ports[1]
+            for rh in raw_headers
+            if (parts := rh.decode().split(": "))
+        }
+        method, path, _ = start_line.decode().split(" ")
+        match (method, path, path.split("/")):
+            case ("GET", "/", _):
+                conn.send(b"HTTP/1.1 200 OK\r\n\r\n")
+            case ("GET", _, ["", "echo", data]):
+                body = data.encode()
+                extra_headers = []
+                encoding = headers.get("Accept-Encoding")
+                if encoding in {"gzip"]:
+                    extra_headers.append(
+                        b"Content-Encoding: %b\r\n % encoding.encode()
+                    )
+                conn.send(
+                    b"".join(
+                        [
+                            b"HTTP/1.1 200 OK",
+                            b"\r\n",
+                            *extra_headers,
+                            b"Content-Type: text/plain\r\n",
+                            b"Content-Length: %d\r\n" % len(body),
+                            b"\r\n",
+                            body,
+                        ] 
+                    )
+                )
+            case ("GET", "/user-agent", _):
+                body = headers["User-Agent"].encode()
+                conn.send(
+                    b"".join(
+                        [
+                            b"HTTP/1.1 200 OK",
+                            b"\r\n",
+                            b"Conent-Type: text/plain\r\n",
+                            b"\r\n",
+                            body,
+                        ]
+                    )
+                )
+            case ("GET", _, ["", "files", f]):
+                target = Path(sys.argv[2]) / f
+                if target.exists():
+                    body = target.read_bytes()
+                    conn.send(
+                        b"".join(
+                        [
+                            b"HTTP/1.1 200 OK",
+                            b"\r\n",
+                            b"Content-Type: application/octet-stream\r\n",
+                            b"Content-Length: %d\r\n" % len(body),
+                            b"\r\n",
+                            body,
+                        ] 
+                    )
+                )
+            else:
+                conn.send(b"HTTP/1.1 404 Not Found\r\n\r\n")
+        case ("POST", _, ["", "files", f]):
+            target = Path(sys.argv[2]) / f
+            size = int(headers["Content-Length"])
+            remaining = size - len(body_start)
+            if remaining > 0:
+                body_rest = conn.recv(remaining, socket.MSG_WAITALL)
+            else: 
+                body_rest = b""
+            body = body_start + body_rest
+            target.write_bytes(body)
+            conn.send(
+                b"".join(
+                    [
+                        b"HTTP/1.1 201 Created",
+                        b"\r\n\",
+                        b"\r\n\",
+                    ]
                 )
             )
-        elif method.upper() == "POST":
-            p.write_bytes(body.encode())
-            writer.write(make_response(201))
-        else:
-            writer.write(make_response(404))
-        stderr(f"[OUT] file {path}")
-    else:
-        writer.write(make_response(404, {}, ""))
-        stderr(f"[OUT] 404")
-    writer.close()
-
-
-async def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--directory", default=".")
-    args = parser.parse_args()
-    
-    GLOBALS["DIR"] = args.directory
-
-    server = await asyncio.start_server(handle_connection, "localhost", 4221)
-    async with server:
-        stderr("Starting server...")
-        stderr(f"--directory {GLOBALS['DIR']}")
-        await server.serve_forever()
+        case _:
+            conn.send(b"HTTP/1.1 404 Not Found\r\n\r\n")
+        
+        
+        
+def process_conn_with_exception(conn):
+    try:
+        process_conn(conn)
+    except Exception as ex:
+        print(ex)
+        
+        
+def main():
+    with socket.create_server(("localhost", 4221), reuse_port=True) as server_socket:
+        with ThreadPoolExecutor(max_workers=100) as executor:
+            while True:
+                (conn, _) = server_socket.accept()
+                executor.submit(process_conn_with_exception, conn)
 
 
 if __name__ == "__main__":
-
-    asyncio.run(main())
+    main()
+    
+                     
 
 
 
