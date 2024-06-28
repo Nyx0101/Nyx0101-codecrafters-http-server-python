@@ -8,7 +8,7 @@ from pathlib import Path
 def process_conn(conn):
     with conn:
         init = conn.recv(4096)
-        
+
         def parse_http(bs: bytes):
             lines: List[bytes] = []
             while not bs.startswith(b"\r\n"):
@@ -20,10 +20,10 @@ def process_conn(conn):
                     cont = conn.recv(4096)
                     bs += cont
             return lines, bs[2:]
-            
+
         (start_line, *raw_headers), body_start = parse_http(init)
         headers = {
-            parts[0]: ports[1]
+            parts[0]: parts[1]
             for rh in raw_headers
             if (parts := rh.decode().split(": "))
         }
@@ -49,7 +49,7 @@ def process_conn(conn):
                             b"Content-Length: %d\r\n" % len(body),
                             b"\r\n",
                             body,
-                        ] 
+                        ]
                     )
                 )
             case ("GET", "/user-agent", _):
@@ -59,7 +59,7 @@ def process_conn(conn):
                         [
                             b"HTTP/1.1 200 OK",
                             b"\r\n",
-                            b"Conent-Type: text/plain\r\n",
+                            b"Content-Type: text/plain\r\n",
                             b"\r\n",
                             body,
                         ]
@@ -71,60 +71,55 @@ def process_conn(conn):
                     body = target.read_bytes()
                     conn.send(
                         b"".join(
+                            [
+                                b"HTTP/1.1 200 OK",
+                                b"\r\n",
+                                b"Content-Type: application/octet-stream\r\n",
+                                b"Content-Length: %d\r\n" % len(body),
+                                b"\r\n",
+                                body,
+                            ]
+                        )
+                    )
+                else:
+                    conn.send(b"HTTP/1.1 404 Not Found\r\n\r\n")
+            case ("POST", _, ["", "files", f]):
+                target = Path(sys.argv[2]) / f
+                size = int(headers["Content-Length"])
+                remaining = size - len(body_start)
+                if remaining > 0:
+                    body_rest = conn.recv(remaining, socket.MSG_WAITALL)
+                else:
+                    body_rest = b""
+                body = body_start + body_rest
+                target.write_bytes(body)
+                conn.send(
+                    b"".join(
                         [
-                            b"HTTP/1.1 200 OK",
-                            b"\r\n",
-                            b"Content-Type: application/octet-stream\r\n",
-                            b"Content-Length: %d\r\n" % len(body),
-                            b"\r\n",
-                            body,
-                        ] 
+                            b"HTTP/1.1 201 Created",
+                            b"\r\n",   # Corrected line
+                            b"\r\n",   # Corrected line
+                        ]
                     )
                 )
-            else:
-    conn.send(b"HTTP/1.1 404 Not Found\r\n\r\n")
-case ("POST", _, ["", "files", f]):
-    target = Path(sys.argv[2]) / f
-    size = int(headers["Content-Length"])
-    remaining = size - len(body_start)
-    if remaining > 0:
-        body_rest = conn.recv(remaining, socket.MSG_WAITALL)
-    else:
-        body_rest = b""
-    body = body_start + body_rest
-    target.write_bytes(body)
-    conn.send(
-        b"".join(
-            [
-                b"HTTP/1.1 201 Created",
-                b"\r\n",   # Corrected line
-                b"\r\n",   # Corrected line
-            ]
-        )
-    )
-case _:
-    conn.send(b"HTTP/1.1 404 Not Found\r\n\r\n")
+            case _:
+                conn.send(b"HTTP/1.1 404 Not Found\r\n\r\n")
 
-        
-        
-        
-def process_conn_with_exception(conn):
-    try:
-        process_conn(conn)
-    except Exception as ex:
-        print(ex)
-        
-        
+# Add the necessary code to initialize and start the server
 def main():
-    with socket.create_server(("localhost", 4221), reuse_port=True) as server_socket:
-        with ThreadPoolExecutor(max_workers=100) as executor:
+    host = 'localhost'
+    port = 8080
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind((host, port))
+        s.listen()
+        with ThreadPoolExecutor() as executor:
             while True:
-                (conn, _) = server_socket.accept()
-                executor.submit(process_conn_with_exception, conn)
-
+                conn, addr = s.accept()
+                executor.submit(process_conn, conn)
 
 if __name__ == "__main__":
     main()
+
     
                      
 
