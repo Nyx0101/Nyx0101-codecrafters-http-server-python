@@ -33,12 +33,9 @@ def process_conn(conn):
             case ("GET", _, ["", "echo", data]):
                 body = data.encode()
                 extra_headers = []
-                if "Accept-Encoding" in headers:
-                    encoding = headers.get("Accept-Encoding")
+                encoding = headers.get("Accept-Encoding")
                 if encoding in ["gzip"]:
                     extra_headers.append(
-                        b"Content-Encoding: %b\r\n"
-                        % headers["Accept-Encoding"].encode()
                         b"Content-Encoding: %b\r\n" % encoding.encode()
                     )
                 conn.send(
