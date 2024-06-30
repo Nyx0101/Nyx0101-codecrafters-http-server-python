@@ -20,7 +20,6 @@ def handle_request(conn, addr):
             
             
         encoding = ""
-        if accept_encoding == "gzip":
         if "gzip" in accept_encoding:
             encoding = "Content-Encoding: gzip\r\n"
             
