@@ -11,7 +11,7 @@ def handle_request(conn, addr):
     path = request[0].split(" ")[1]
     body = request[-1]
     user_agent= ""
-    accept_encodoing = ""
+    accept_encoding = ""
     for line in request:
         if line.startswith("User-Agent:"):
             user_agent = line [len("User-Agent:") :]
@@ -46,7 +46,7 @@ def handle_request(conn, addr):
                     with open(argv[2] + f_name) as f:
                         content = f.read()
                         cont_length = len(content)
-                        response = f"HTTP/1.1. 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {str(con_length)}\r\n\r\n{content}"
+                        response = f"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {str(con_length)}\r\n\r\n{content}"
                 except FileNotFoundError:
                     response = "HTTP/1.1 400 Not Found\r\n\r\n"
                 conn.send(response.encode())
