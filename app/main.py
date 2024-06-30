@@ -1,6 +1,6 @@
 from sys import argv
 import socket
-import theading
+import threading
 
 
 
