@@ -29,7 +29,7 @@ def handle_request(conn, addr):
         elif path == "/user-agent":
             response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(user_agent)}\r\n\r\n{user_agent}\r\n"
             conn.send(response.encode())
-        elif '/files" in path:
+        elif "/files" in path:
             if method == "POST":
                 directory = argv[2]
                 filename = path[7:]
