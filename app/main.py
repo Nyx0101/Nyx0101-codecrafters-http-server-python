@@ -8,7 +8,7 @@ def handle_request(conn, addr):
     data = conn.recv(1024).decode("utf-8")
     request = data.split("\r\n")
     method = request[0].split(" ")[0]
-    path = request[0].split(" ')[1]
+    path = request[0].split(" ")[1]
     body = request[-1]
     user_agent= ""
     accept_encodoing = ""
