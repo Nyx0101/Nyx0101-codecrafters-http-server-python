@@ -1,4 +1,4 @@
- import gzip
+import gzip
 import pathlib
 import socket
 import sys
